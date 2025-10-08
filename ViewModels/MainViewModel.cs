@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Linq;
 using TodoList.Commands;
 using TodoList.Models;
 using TodoList.Services;
@@ -8,6 +9,18 @@ using System.Windows.Input;
 
 namespace TodoList.ViewModels
 {
+
+    public enum SortField {
+        Status,
+        Date,
+        Title
+    }
+
+    public enum SortOrder {
+        Ascending,
+        Descending
+    }
+
     public class MainViewModel : INotifyPropertyChanged
     {
         private readonly ITodoService _todoService;
@@ -26,6 +39,28 @@ namespace TodoList.ViewModels
         public ICommand AddCommand { get; }
         public ICommand ToggleCompleteCommand { get; }
         public ICommand RemoveCommand { get; }
+
+
+        private SortField _selectedSortField = SortField.Status;
+        public SortField SelectedSortField {
+            get => _selectedSortField;
+            set { _selectedSortField = value; OnPropertyChanged(); RefreshSortedItems(); }
+        }
+
+        private SortOrder _sortOrder = SortOrder.Ascending;
+        public SortOrder SortOrder {
+            get => _sortOrder;
+            set { _sortOrder = value; OnPropertyChanged(); RefreshSortedItems(); }
+        }
+
+        private bool _isSortAscending = true;
+        public bool IsSortAscending {
+            get => _isSortAscending;
+            set { _isSortAscending = value; OnPropertyChanged(); RefreshSortedItems(); }
+        }
+
+        public IEnumerable<SortField> SortFields => Enum.GetValues<SortField>();
+        public string[] SortOrders = new[] { "По возрастанию", "По убыванию" };
 
 
         public MainViewModel(ITodoService todoService) {
@@ -56,6 +91,23 @@ namespace TodoList.ViewModels
         private void RemoveItem(TodoItem item) {
             _todoService.Remove(item.Id);
             TodoItems.Remove(item);
+        }
+
+        private void RefreshSortedItems() {
+            var items = _todoService.GetAll().AsQueryable();
+
+            items = SelectedSortField switch {
+                SortField.Status => IsSortAscending ? items.OrderBy(x => x.IsCompleted) : items.OrderByDescending(x => x.IsCompleted),
+                SortField.Date => IsSortAscending ? items.OrderBy(x => x.CreatedAt) : items.OrderByDescending(x => x.CreatedAt),
+                SortField.Title => IsSortAscending ? items.OrderBy(x => x.Title) : items.OrderByDescending(x => x.Title),
+                _ => items.OrderBy(x => x.CreatedAt)
+            };
+
+            TodoItems.Clear();
+            foreach (var item in items) {
+                TodoItems.Add(item);
+            }
+
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
