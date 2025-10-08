@@ -20,5 +20,19 @@ namespace TodoList
         {
             InitializeComponent();
         }
+
+        private void btnAddTask_Click(object sender, RoutedEventArgs e) {
+
+            if (string.IsNullOrWhiteSpace(todoInp.Text)) return;
+
+            CheckBox newTodo = new CheckBox();
+            newTodo.Content = todoInp.Text;
+            newTodo.FontSize = 18;
+            newTodo.VerticalContentAlignment = VerticalAlignment.Center;
+            todosList.Children.Insert(0, newTodo);
+
+            todoInp.Text = "";
+
+        }
     }
 }
