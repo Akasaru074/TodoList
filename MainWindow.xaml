@@ -32,11 +32,15 @@
         </StackPanel>
 
         <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding TodoItems}">
+            <ItemsControl ItemsSource="{Binding TodoItemsView}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Margin="0,5" HorizontalAlignment="Center">
-                            <CheckBox IsChecked="{Binding IsCompleted, Mode=TwoWay}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <CheckBox IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                      Command="{Binding DataContext.ToggleCompleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                      CommandParameter="{Binding}"
+                                      VerticalAlignment="Center" 
+                                      Margin="0,0,10,0" />
                             <TextBlock Text="{Binding Title}" FontSize="18" VerticalAlignment="Center" />
                             <Button Content="❌" Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" 
                                     Margin="10, 0" Width="30" Height="30" CommandParameter="{Binding}" />
@@ -45,6 +49,5 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-
     </Grid>
 </Window>

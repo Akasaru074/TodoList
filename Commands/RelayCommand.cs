@@ -32,8 +32,15 @@ namespace TodoList.Commands
             _canExecute = canExecute;
         }
 
-        public bool CanExecute(object? parameter) => _canExecute?.Invoke((T)parameter!) ?? true;
-        public void Execute(object? parameter) => _execute((T)parameter!);
+        public bool CanExecute(object? parameter) {
+            if (parameter is T t)
+                return _canExecute?.Invoke(t) ?? true;
+            return false;
+        }
+        public void Execute(object? parameter) {
+            if (parameter is T t)
+                _execute(t);
+        }
 
         public event EventHandler? CanExecuteChanged {
             add => CommandManager.RequerySuggested += value;
