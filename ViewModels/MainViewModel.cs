@@ -7,22 +7,14 @@ using TodoList.Services;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
-namespace TodoList.ViewModels
-{
-
+namespace TodoList.ViewModels {
     public enum SortField {
         Status,
         Date,
         Title
     }
 
-    public enum SortOrder {
-        Ascending,
-        Descending
-    }
-
-    public class MainViewModel : INotifyPropertyChanged
-    {
+    public class MainViewModel : INotifyPropertyChanged {
         private readonly ITodoService _todoService;
         private string _newItemTitle = string.Empty;
 
@@ -35,7 +27,6 @@ namespace TodoList.ViewModels
             }
         }
 
-
         public ICommand AddCommand { get; }
         public ICommand ToggleCompleteCommand { get; }
         public ICommand RemoveCommand { get; }
@@ -47,12 +38,6 @@ namespace TodoList.ViewModels
             set { _selectedSortField = value; OnPropertyChanged(); RefreshSortedItems(); }
         }
 
-        private SortOrder _sortOrder = SortOrder.Ascending;
-        public SortOrder SortOrder {
-            get => _sortOrder;
-            set { _sortOrder = value; OnPropertyChanged(); RefreshSortedItems(); }
-        }
-
         private bool _isSortAscending = true;
         public bool IsSortAscending {
             get => _isSortAscending;
@@ -60,18 +45,21 @@ namespace TodoList.ViewModels
         }
 
         public IEnumerable<SortField> SortFields => Enum.GetValues<SortField>();
-        public string[] SortOrders = new[] { "По возрастанию", "По убыванию" };
-
+        public string[] SortOrders => new[] { "По возрастанию", "По убыванию" }; 
 
         public MainViewModel(ITodoService todoService) {
             _todoService = todoService;
-            TodoItems = new ObservableCollection<TodoItem>(_todoService.GetAll());
+            TodoItems = new ObservableCollection<TodoItem>();
+            RefreshSortedItems();
+
             AddCommand = new RelayCommand(AddNewItem, () => !string.IsNullOrWhiteSpace(NewItemTitle));
             ToggleCompleteCommand = new RelayCommand<TodoItem>(ToggleItem);
             RemoveCommand = new RelayCommand<TodoItem>(RemoveItem);
         }
 
         private void AddNewItem() {
+            if (string.IsNullOrWhiteSpace(NewItemTitle)) return;
+
             var newItem = new TodoItem {
                 Id = Guid.NewGuid(),
                 Title = NewItemTitle.Trim(),
@@ -79,27 +67,38 @@ namespace TodoList.ViewModels
                 CreatedAt = DateTime.Now
             };
             _todoService.Add(newItem);
-            TodoItems.Add(newItem);
+            RefreshSortedItems();
             NewItemTitle = string.Empty;
         }
 
         private void ToggleItem(TodoItem item) {
+            System.Diagnostics.Debug.WriteLine("ToggleItem called");
+            if (item == null) return;
             item.IsCompleted = !item.IsCompleted;
             _todoService.Update(item);
+            RefreshSortedItems();
         }
 
         private void RemoveItem(TodoItem item) {
+            if (item == null) return;
             _todoService.Remove(item.Id);
-            TodoItems.Remove(item);
+            RefreshSortedItems();
         }
 
         private void RefreshSortedItems() {
+            System.Diagnostics.Debug.WriteLine("Refreshing sorted items...");
             var items = _todoService.GetAll().AsQueryable();
 
             items = SelectedSortField switch {
-                SortField.Status => IsSortAscending ? items.OrderBy(x => x.IsCompleted) : items.OrderByDescending(x => x.IsCompleted),
-                SortField.Date => IsSortAscending ? items.OrderBy(x => x.CreatedAt) : items.OrderByDescending(x => x.CreatedAt),
-                SortField.Title => IsSortAscending ? items.OrderBy(x => x.Title) : items.OrderByDescending(x => x.Title),
+                SortField.Status => IsSortAscending
+                    ? items.OrderBy(x => x.IsCompleted)
+                    : items.OrderByDescending(x => x.IsCompleted),
+                SortField.Date => IsSortAscending
+                    ? items.OrderBy(x => x.CreatedAt)
+                    : items.OrderByDescending(x => x.CreatedAt),
+                SortField.Title => IsSortAscending
+                    ? items.OrderBy(x => x.Title)
+                    : items.OrderByDescending(x => x.Title),
                 _ => items.OrderBy(x => x.CreatedAt)
             };
 
@@ -107,13 +106,11 @@ namespace TodoList.ViewModels
             foreach (var item in items) {
                 TodoItems.Add(item);
             }
-
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null) {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
     }
 }
