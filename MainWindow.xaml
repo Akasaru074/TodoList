@@ -10,20 +10,31 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
-            <RowDefinition></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
 
         <TextBlock TextAlignment="Center" FontSize="40">Список задач</TextBlock>
 
         <StackPanel Margin="0,10,0,0" Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
             <Label FontSize="20"  VerticalAlignment="Center">Введите задачу</Label>
-            <TextBox x:Name="todoInp" Width="200" FontSize="20" Height="auto" Grid.Row="1" ></TextBox>
-            <Button Click="btnAddTask_Click" x:Name="btnAddTask" Margin="20,0,0,0">Добавить</Button>
+            <TextBox Text="{Binding NewItemTitle, UpdateSourceTrigger=PropertyChanged}" Width="200" FontSize="20" Height="auto" Grid.Row="1" ></TextBox>
+            <Button Command="{Binding AddCommand}" Margin="20,0,0,0" Content="Добавить" />
         </StackPanel>
 
-        <StackPanel Name="todosList" Orientation="Vertical" Margin="0,20,0,20" HorizontalAlignment="Center" Grid.Row="2">
-            
-        </StackPanel>
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding TodoItems}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="0,5" HorizontalAlignment="Center">
+                            <CheckBox IsChecked="{Binding IsCompleted}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <TextBlock Text="{Binding Title}" FontSize="18" VerticalAlignment="Center" />
+                            <Button Content="❌" Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" 
+                                    Margin="10, 0" Width="30" Height="30" CommandParameter="{Binding}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
 
     </Grid>
 </Window>

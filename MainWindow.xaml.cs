@@ -8,6 +8,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TodoList.Services;
+using TodoList.ViewModels;
 
 namespace TodoList
 {
@@ -19,20 +21,12 @@ namespace TodoList
         public MainWindow()
         {
             InitializeComponent();
-        }
 
-        private void btnAddTask_Click(object sender, RoutedEventArgs e) {
-
-            if (string.IsNullOrWhiteSpace(todoInp.Text)) return;
-
-            CheckBox newTodo = new CheckBox();
-            newTodo.Content = todoInp.Text;
-            newTodo.FontSize = 18;
-            newTodo.VerticalContentAlignment = VerticalAlignment.Center;
-            todosList.Children.Insert(0, newTodo);
-
-            todoInp.Text = "";
+            var todoService = new InMemoryTodoService();
+            var viewmodel = new MainViewModel(todoService);
+            DataContext = viewmodel;
 
         }
+
     }
 }

@@ -9,7 +9,7 @@ namespace TodoList.Commands
         private readonly Func<bool>? _canExecute;
 
         public RelayCommand(Action execute, Func<bool>? canExecute = null) {
-            _execute = _execute ?? throw new ArgumentNullException(nameof(execute));
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
         }
 
@@ -28,7 +28,7 @@ namespace TodoList.Commands
         private readonly Func<T, bool>? _canExecute;
 
         public RelayCommand(Action<T> execute, Func<T, bool>? canExecute = null) {
-            _execute = _execute ?? throw new ArgumentNullException(nameof(execute));
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
         }
 
